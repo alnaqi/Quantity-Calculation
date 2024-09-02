@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantity Calculation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        .inputs-container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+        }
+        #result {
+            margin-top: 10px;
+            display: none; /* Hide result and error initially */
+        }
+        #error {
+            margin-top: 10px;
+            color: red;
+            display: none; /* Hide the error message initially */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            display: table; /* Ensure the table is displayed */
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: right; /* Align numbers to the right */
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .action-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .action-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .action-btn:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+        .back-btn {
+            background-color: #f44336;
+        }
+        .back-btn:hover:not(:disabled) {
+            background-color: #e53935;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="inputs-container">
+            <div>
+                <label for="numberInput">Enter a number:</label>
+                <input type="number" id="numberInput" />
+            </div>
+
+            <div>
+                <label for="quantityInput">Enter quantity:</label>
+                <input type="number" id="quantityInput" />
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button onclick="calculate()">Calculate</button>
+            <button onclick="clearFields()">Clear</button>
+        </div>
+        
+        <div id="result">
+            <strong>Result:</strong>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Number</th>
+                        <th>Result</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="resultBody">
+                    <!-- Results will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="error">
+            <strong>Error:</strong> Please enter valid numbers.
+        </div>
+    </div>
+
+    <script>
+        var truncatedNumber;
+        var previousResults = [];
+
+        function calculate() {
+            var number = parseFloat(document.getElementById('numberInput').value);
+            var quantity = parseInt(document.getElementById('quantityInput').value);
+            
+            if (isNaN(number) || isNaN(quantity) || quantity < 1) {
+                document.getElementById('error').style.display = 'block'; // Show the error message
+                document.getElementById('result').style.display = 'none'; // Hide the result
+                return;
+            }
+
+            // Truncate to two decimal places
+            truncatedNumber = Math.floor(number * 100) / 100;
+
+            var firstNumber = 2;
+            var results = [];
+
+            for (var i = 1; i < quantity; i++) {
+                var result = truncatedNumber / firstNumber;
+                results.push({
+                    number: firstNumber,
+                    result
+                });
+                firstNumber += 1;
+            }
+
+            var resultBody = document.getElementById('resultBody');
+            resultBody.innerHTML = results.map((item, index) => 
+                `<tr>
+                    <td>${item.number}</td>
+                    <td>${item.result}</td>
+                    <td><button class="action-btn" onclick="updateResult(${index})">Update</button></td>
+                </tr>`
+            ).join("");
+
+            document.getElementById('result').style.display = 'block'; // Show the result
+            document.getElementById('error').style.display = 'none'; // Hide the error message
+            previousResults = results; // Store the results for "Back" functionality
+        }
+
+        function updateResult(index) {
+            var rows = document.querySelectorAll('#resultBody tr');
+            var resultCell = rows[index].cells[1];
+            var resultValue = parseFloat(resultCell.innerText);
+            
+            // Disable all buttons
+            document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = true);
+
+            // Add new result below
+            var resultBody = document.getElementById('resultBody');
+            var newRow = document.createElement('tr');
+            newRow.innerHTML = `<td>New</td><td>${(truncatedNumber - resultValue)}</td><td><button class="action-btn back-btn" onclick="goBack()">Back</button></td>`;
+            resultBody.appendChild(newRow);
+        }
+
+        function goBack() {
+            var resultBody = document.getElementById('resultBody');
+            var rows = resultBody.getElementsByTagName('tr');
+            if (rows.length > 0) {
+                resultBody.removeChild(rows[rows.length - 1]); // Remove the last row
+            }
+
+            // Restore previous results and enable buttons
+            var currentResults = previousResults;
+            resultBody.innerHTML = currentResults.map((item, index) => 
+                `<tr>
+                    <td>${item.number}</td>
+                    <td>${item.result}</td>
+                    <td><button class="action-btn" onclick="updateResult(${index})">Update</button></td>
+                </tr>`
+            ).join("");
+
+            document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = false);
+        }
+
+        function clearFields() {
+            // Clear the input fields
+            document.getElementById('numberInput').value = '';
+            document.getElementById('quantityInput').value = '';
+            // Hide the result and error
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('resultBody').innerHTML = ''; // Clear the results table
+            previousResults = []; // Clear previous results
+        }
+    </script>
+</body>
+</html>
