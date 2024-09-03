@@ -183,6 +183,8 @@
         var resultQuantity = originalState[index].quantity;
         var remainingQuantity = originalState.length - index - 1;
 
+        var d1 = resultValue/resultQuantity
+
         // Calculate yValue
         var yValue = totalPrice - resultValue;
 
@@ -211,7 +213,7 @@
             <td class="steps" colspan="3">Step 2: <br/>${roundedYValue} / ${remainingQuantity} = ${roundedNewResult}</td>
         </tr>
         <tr>
-            <td colspan="2"><strong>D1: ${resultValue} * ${resultQuantity}<br/><br/>D2: ${roundedNewResult} * ${remainingQuantity}</strong></td>
+            <td colspan="2"><strong>D1: ${d1} * ${resultQuantity}<br/>D2: ${roundedNewResult} * ${remainingQuantity}</strong><br/><br/><strong>Result: ${(d1*resultQuantity)+(roundedNewResult*remainingQuantity)}</strong></td>
             <td class="back-button"><button onclick="revertResult()">Back</button></td>
         </tr>
     `;
