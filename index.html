@@ -1,206 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quantity Calculation</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        .container {
-            max-width: 300px;
-            margin: 0 auto;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .container {
+        max-width: 300px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .inputs-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap; /* Allow wrapping of items */
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .inputs-container > div {
+        flex: 1 1 100%; /* Make each item take up full width */
+      }
+
+      @media (max-width: 600px) {
         .inputs-container {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 10px;
+          flex-direction: column; /* Stack items vertically on small screens */
         }
-        label {
-            display: block;
-        }
-        #result {
-            margin-top: 10px;
-            display: none; /* Hide result and error initially */
-        }
-        #error {
-            margin-top: 10px;
-            color: red;
-            display: none; /* Hide the error message initially */
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            display: table; /* Ensure the table is displayed */
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: right; /* Align numbers to the right */
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        .buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        .action-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-        .action-btn:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        .action-btn:hover:not(:disabled) {
-            background-color: #45a049;
-        }
-        .back-btn {
-            background-color: #f44336;
-        }
-        .back-btn:hover:not(:disabled) {
-            background-color: #e53935;
-        }
+      }
+      label {
+        display: block;
+      }
+      #result {
+        margin-top: 10px;
+        display: none;
+      }
+      #error {
+        margin-top: 10px;
+        color: red;
+        display: none;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        display: table;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      th {
+        background-color: #f4f4f4;
+        text-align: left;
+      }
+      td {
+        text-align: left;
+      }
+      .action-column {
+        text-align: center;
+      }
+      .steps {
+        text-align: left;
+      }
+      .buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+      }
+      .back-button {
+        text-align: center;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="inputs-container">
-            <div>
-                <label for="numberInput">Enter a number:</label>
-                <input type="number" id="numberInput" />
-            </div>
-
-            <div>
-                <label for="quantityInput">Enter quantity:</label>
-                <input type="number" id="quantityInput" />
-            </div>
+      <div class="inputs-container">
+        <div>
+          <label for="numberInput">Unit Price:</label>
+          <input type="number" id="numberInput" />
         </div>
 
-        <div class="buttons">
-            <button onclick="calculate()">Calculate</button>
-            <button onclick="clearFields()">Clear</button>
-        </div>
-        
-        <div id="result">
-            <strong>Result:</strong>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Number</th>
-                        <th>Result</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="resultBody">
-                    <!-- Results will be inserted here -->
-                </tbody>
-            </table>
+        <div>
+          <label for="quantityInput">Enter quantity:</label>
+          <input type="number" id="quantityInput" />
         </div>
 
-        <div id="error">
-            <strong>Error:</strong> Please enter valid numbers.
+        <div>
+          <label for="totalPriceInput">Total Price:</label>
+          <input type="number" id="totalPriceInput" />
         </div>
+      </div>
+
+      <div class="buttons">
+        <button onclick="calculate()">Calculate</button>
+        <button onclick="clearFields()">Clear</button>
+      </div>
+
+      <div id="result">
+        <strong>Result:</strong>
+        <table>
+          <thead>
+            <tr>
+              <th>Quantity</th>
+              <th>Result</th>
+              <th class="action-column">Action</th>
+            </tr>
+          </thead>
+          <tbody id="resultBody">
+            <!-- Results will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+
+      <div id="error"><strong>Error:</strong> Please enter valid numbers.</div>
     </div>
 
     <script>
-        var truncatedNumber;
-        var previousResults = [];
+      var originalState = null;
 
-        function calculate() {
-            var number = parseFloat(document.getElementById('numberInput').value);
-            var quantity = parseInt(document.getElementById('quantityInput').value);
-            
-            if (isNaN(number) || isNaN(quantity) || quantity < 1) {
-                document.getElementById('error').style.display = 'block'; // Show the error message
-                document.getElementById('result').style.display = 'none'; // Hide the result
-                return;
-            }
+      function calculate() {
+        var unitPrice = parseFloat(
+          document.getElementById("numberInput").value
+        );
+        var quantity = parseInt(document.getElementById("quantityInput").value);
+        var totalPrice = parseFloat(
+          document.getElementById("totalPriceInput").value
+        );
 
-            // Truncate to two decimal places
-            truncatedNumber = Math.floor(number * 100) / 100;
+        if (
+          isNaN(unitPrice) ||
+          isNaN(quantity) ||
+          isNaN(totalPrice) ||
+          quantity < 1
+        ) {
+          document.getElementById("error").style.display = "block";
+          document.getElementById("result").style.display = "none";
+          return;
+        }
 
-            var firstNumber = 2;
-            var results = [];
+        var truncatedPrice = Math.floor(unitPrice * 100) / 100;
+        var results = [];
 
-            for (var i = 1; i < quantity; i++) {
-                var result = truncatedNumber / firstNumber;
-                results.push({
-                    number: firstNumber,
-                    result
-                });
-                firstNumber += 1;
-            }
+        for (var i = 1; i <= quantity; i++) {
+          var result = truncatedPrice * i;
+          results.push({
+            quantity: i,
+            result: result,
+          });
+        }
 
-            var resultBody = document.getElementById('resultBody');
-            resultBody.innerHTML = results.map((item, index) => 
-                `<tr>
-                    <td>${item.number}</td>
+        originalState = [...results];
+
+        var resultBody = document.getElementById("resultBody");
+        resultBody.innerHTML = results
+          .map(
+            (item, index) =>
+              `<tr>
+                    <td>${item.quantity}</td>
                     <td>${item.result}</td>
-                    <td><button class="action-btn" onclick="updateResult(${index})">Update</button></td>
+                    <td class="action-column"><button onclick="updateResult(${index})">Update</button></td>
                 </tr>`
-            ).join("");
+          )
+          .join("");
 
-            document.getElementById('result').style.display = 'block'; // Show the result
-            document.getElementById('error').style.display = 'none'; // Hide the error message
-            previousResults = results; // Store the results for "Back" functionality
+        document.getElementById("result").style.display = "block";
+        document.getElementById("error").style.display = "none";
+      }
+
+      function updateResult(index) {
+        var totalPrice = parseFloat(
+          document.getElementById("totalPriceInput").value
+        );
+        var resultValue = originalState[index].result;
+        var resultQuantity = originalState[index].quantity;
+        var remainingQuantity = originalState.length - index - 1;
+
+        // Calculate yValue
+        var yValue = totalPrice - resultValue;
+
+        // Calculate newResult
+        var newResult = yValue / remainingQuantity;
+
+        // Helper function to round up to a specific number of decimal places
+        function roundUp(value, decimalPlaces) {
+          var factor = Math.pow(10, decimalPlaces);
+          return Math.ceil(value * factor) / factor;
         }
 
-        function updateResult(index) {
-            var rows = document.querySelectorAll('#resultBody tr');
-            var resultCell = rows[index].cells[1];
-            var resultValue = parseFloat(resultCell.innerText);
-            
-            // Disable all buttons
-            document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = true);
+        // Round yValue and newResult to 3 decimal places
+        var roundedYValue = roundUp(yValue, 3);
+        var roundedNewResult = roundUp(newResult, 3);
 
-            // Add new result below
-            var resultBody = document.getElementById('resultBody');
-            var newRow = document.createElement('tr');
-            newRow.innerHTML = `<td>New</td><td>${(truncatedNumber - resultValue)}</td><td><button class="action-btn back-btn" onclick="goBack()">Back</button></td>`;
-            resultBody.appendChild(newRow);
+        var buttons = document.querySelectorAll("table tbody tr td button");
+        buttons.forEach((button) => (button.disabled = true));
+
+        var resultBody = document.getElementById("resultBody");
+        resultBody.innerHTML += `
+        <tr>
+            <td class="steps" colspan="3">Step 1: <br/>${totalPrice} - ${resultValue} = ${roundedYValue}</td>
+        </tr>
+        <tr>
+            <td class="steps" colspan="3">Step 2: <br/>${roundedYValue} / ${remainingQuantity} = ${roundedNewResult}</td>
+        </tr>
+        <tr>
+            <td colspan="2"><strong>D1: ${resultValue} * ${resultQuantity}<br/><br/>D2: ${roundedNewResult} * ${remainingQuantity}</strong></td>
+            <td class="back-button"><button onclick="revertResult()">Back</button></td>
+        </tr>
+    `;
+      }
+
+      function revertResult() {
+        var buttons = document.querySelectorAll("table tbody tr td button");
+        buttons.forEach((button) => (button.disabled = false));
+
+        var resultBody = document.getElementById("resultBody");
+        for (var i = 0; i < 3; i++) {
+          resultBody.deleteRow(resultBody.rows.length - 1);
         }
+      }
 
-        function goBack() {
-            var resultBody = document.getElementById('resultBody');
-            var rows = resultBody.getElementsByTagName('tr');
-            if (rows.length > 0) {
-                resultBody.removeChild(rows[rows.length - 1]); // Remove the last row
-            }
-
-            // Restore previous results and enable buttons
-            var currentResults = previousResults;
-            resultBody.innerHTML = currentResults.map((item, index) => 
-                `<tr>
-                    <td>${item.number}</td>
-                    <td>${item.result}</td>
-                    <td><button class="action-btn" onclick="updateResult(${index})">Update</button></td>
-                </tr>`
-            ).join("");
-
-            document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = false);
-        }
-
-        function clearFields() {
-            // Clear the input fields
-            document.getElementById('numberInput').value = '';
-            document.getElementById('quantityInput').value = '';
-            // Hide the result and error
-            document.getElementById('result').style.display = 'none';
-            document.getElementById('error').style.display = 'none';
-            document.getElementById('resultBody').innerHTML = ''; // Clear the results table
-            previousResults = []; // Clear previous results
-        }
+      function clearFields() {
+        document.getElementById("numberInput").value = "";
+        document.getElementById("quantityInput").value = "";
+        document.getElementById("totalPriceInput").value = "";
+        document.getElementById("result").style.display = "none";
+        document.getElementById("error").style.display = "none";
+        document.getElementById("resultBody").innerHTML = "";
+      }
     </script>
-</body>
+  </body>
 </html>
